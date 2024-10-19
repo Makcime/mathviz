@@ -54,10 +54,9 @@ class PrimeFactorDecomposition(Scene):
                     # Update factor count
                     factor_counts[prime] += 1
 
-                    # Display factor beside current number (shifted right)
+                    # Display factor beside current number
                     factor = MathTex(str(prime))
                     factor.next_to(number_mobject, RIGHT, buff=0.5)
-                    # factor.shift(RIGHT * 0.5)
                     self.play(Write(factor))
                     factor_mobjects.append(factor)
 
@@ -102,10 +101,9 @@ class PrimeFactorDecomposition(Scene):
                 # Update factor count
                 factor_counts[current_number] += 1
 
-                # Display factor beside current number (shifted right)
+                # Display factor beside current number
                 factor = MathTex(str(current_number))
                 factor.next_to(number_mobject, RIGHT, buff=0.5)
-                factor.shift(RIGHT * 0.5)
                 self.play(Write(factor))
                 factor_mobjects.append(factor)
 
@@ -133,9 +131,6 @@ class PrimeFactorDecomposition(Scene):
                     FadeOut(rect)
                 )
 
-        # After the decomposition loop
-        # print(factor_counts)  # Debugging
-
         # Build the LaTeX string for the product of factors, isolating "3 \\times 3"
         product_string = "126 = 2 \\times {3 \\times 3} \\times 7"
         final_expression = MathTex(
@@ -143,9 +138,36 @@ class PrimeFactorDecomposition(Scene):
             substrings_to_isolate=["3 \\times 3"]
         )
         final_expression.to_edge(DOWN, buff=1)
-        self.play(Write(final_expression))
 
-        # Create a rectangle around "3 × 3"
+        # New animation: Square around all primes on the right of the vertical line, transform them to the final expression
+
+        # Group all factor mobjects
+        factors_group = VGroup(*factor_mobjects)
+
+        # Create a rectangle around all factors
+        rect_around_factors = SurroundingRectangle(factors_group, color=BLUE)
+        self.play(Create(rect_around_factors))
+
+        # Transform factors into the final expression at the bottom
+        # Position the factors copy at the location of the final expression
+        factors_copy = factors_group.copy()
+        factors_copy.generate_target()
+        factors_copy.target.move_to(final_expression.get_center())
+
+        # Move factors to the final expression position
+        # self.play(MoveToTarget(factors_copy))
+
+        # Transform factors into the final expression
+        self.play(
+            TransformMatchingTex(
+                factors_copy,
+                final_expression
+            ),
+            FadeOut(rect_around_factors)
+        )
+
+        # Continue with the rectangle around "3 × 3" and the exponentiation
+        # Create a rectangle around "3 × 3" in the final expression
         three_times_three = final_expression.get_part_by_tex("3 \\times 3")
         rect_around_three_times_three = SurroundingRectangle(three_times_three, color=YELLOW)
         self.play(Create(rect_around_three_times_three))
