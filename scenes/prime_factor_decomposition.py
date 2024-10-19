@@ -1,98 +1,98 @@
-
 from manim import *
 
 class PrimeFactorDecomposition(Scene):
     def construct(self):
-        # 1. List of primes under 20
+        # List of primes under 20
         primes = [2, 3, 5, 7, 11, 13, 17, 19]
         primes_texts = [MathTex(str(p)) for p in primes]
 
-        # 2. Arrange primes horizontally
+        # Arrange primes horizontally
         primes_group = VGroup(*primes_texts).arrange(RIGHT, buff=0.5)
 
-        # 3. Primes label
+        # Primes label
         primes_label = Text("Primes under 20:")
         primes_label.to_edge(UP).shift(DOWN * 0.5)
 
-        # 4. Position primes group
+        # Position primes group
         primes_group.next_to(primes_label, DOWN, buff=0.3)
 
-        # 5. Add label and primes to scene
+        # Add label and primes to scene
         self.play(Write(primes_label))
         self.play(Write(primes_group))
 
-        # 6. Vertical line
+        # Vertical line
         vertical_line = Line(
             start=primes_group.get_bottom() + DOWN * 0.5,
             end=DOWN * 3
         )
         self.play(Create(vertical_line))
 
-        # 7. Number 126
+        # Number 126 at the top
         number_126 = MathTex("126")
         number_126.next_to(vertical_line.get_top(), LEFT)
         self.play(Write(number_126))
 
-        # 8. Highlight number 2 in primes
-        prime_2_index = primes.index(2)
-        number_2_in_primes = primes_group[prime_2_index]
-        rect_around_2 = SurroundingRectangle(number_2_in_primes, color=RED)
-        self.play(Create(rect_around_2))
+        # Initialize variables for the decomposition
+        current_number = 126
+        number_mobject = number_126
+        factors = []
+        division_equations = []
+        factor_mobjects = []
+        number_mobjects = [number_126]
 
-        # 9. Display factor 2 beside 126 (shifted to the right)
-        factor_2 = MathTex("2")
-        factor_2.next_to(number_126, RIGHT, buff=0.5)
-        factor_2.shift(RIGHT * 0.5)  # Shift further to the right
-        self.play(Write(factor_2))
+        # Start decomposing
+        for prime in primes:
+            while current_number % prime == 0:
+                # Highlight the prime
+                prime_index = primes.index(prime)
+                prime_mobject = primes_group[prime_index]
+                rect = SurroundingRectangle(prime_mobject, color=RED)
+                self.play(Create(rect))
 
-        # 10. Write "126 ÷ 2 = 63" on the right
-        division_equation = MathTex("126 \\div 2 = 63")
-        division_equation.to_edge(RIGHT).shift(UP)
-        self.play(Write(division_equation))
+                # Display factor beside current number (shifted right)
+                factor = MathTex(str(prime))
+                factor.next_to(number_mobject, RIGHT, buff=0.5)
+                factor.shift(RIGHT * 0.5)
+                self.play(Write(factor))
+                factor_mobjects.append(factor)
 
-        # 11. Place 63 under 126 without replacing 126
-        number_63 = MathTex("63")
-        number_63.next_to(number_126, DOWN, aligned_edge=LEFT)
-        self.play(
-            TransformFromCopy(division_equation[-1], number_63)
-        )
+                # Write division equation on the right
+                new_number = current_number // prime
+                division_eq = MathTex(f"{current_number} \\div {prime} = {new_number}")
+                if division_equations:
+                    division_eq.next_to(division_equations[-1], DOWN, aligned_edge=RIGHT)
+                else:
+                    division_eq.to_edge(RIGHT).shift(UP)
+                self.play(Write(division_eq))
+                division_equations.append(division_eq)
 
-        # 12. Fade out the division equation and rectangle around 2
-        self.play(
-            FadeOut(division_equation),
-            FadeOut(rect_around_2)
-        )
+                # Place new number under the current one
+                number_new = MathTex(f"{new_number}")
+                number_new.next_to(number_mobject, DOWN, aligned_edge=LEFT)
+                self.play(
+                    TransformFromCopy(division_eq[-1], number_new)
+                )
+                number_mobjects.append(number_new)
 
-        # 13. Since 63 cannot be divided by 2, proceed to next prime (3)
-        # Highlight number 3 in primes
-        prime_3_index = primes.index(3)
-        number_3_in_primes = primes_group[prime_3_index]
-        rect_around_3 = SurroundingRectangle(number_3_in_primes, color=RED)
-        self.play(Create(rect_around_3))
+                # Update current number and mobject
+                current_number = new_number
+                number_mobject = number_new
 
-        # 14. Display factor 3 beside 63 (shifted to the right)
-        factor_3 = MathTex("3")
-        factor_3.next_to(number_63, RIGHT, buff=0.5)
-        factor_3.shift(RIGHT * 0.5)  # Shift further to the right
-        self.play(Write(factor_3))
+                # Fade out division equation and prime highlight
+                self.play(
+                    FadeOut(division_eq),
+                    FadeOut(rect)
+                )
 
-        # 15. Write "63 ÷ 3 = 21" on the right
-        division_equation_2 = MathTex("63 \\div 3 = 21")
-        division_equation_2.next_to(division_equation, DOWN, aligned_edge=RIGHT)
-        self.play(Write(division_equation_2))
+                # Break if current_number is 1
+                if current_number == 1:
+                    break
+            if current_number == 1:
+                break
 
-        # 16. Place 21 under 63
-        number_21 = MathTex("21")
-        number_21.next_to(number_63, DOWN, aligned_edge=LEFT)
-        self.play(
-            TransformFromCopy(division_equation_2[-1], number_21)
-        )
-
-        # 17. Fade out the division equation and rectangle around 3
-        self.play(
-            FadeOut(division_equation_2),
-            FadeOut(rect_around_3)
-        )
-
-        # Continue the decomposition as needed
-       # You can continue the process similarly for further decomposition
+        # Build the LaTeX string separately to avoid SyntaxError
+        factor_texts = [factor.get_tex_string() for factor in factor_mobjects]
+        product_string = " \\times ".join(factor_texts)
+        final_expression = MathTex(f"126 = {product_string}")
+        final_expression.to_edge(DOWN)
+        self.play(Write(final_expression))
