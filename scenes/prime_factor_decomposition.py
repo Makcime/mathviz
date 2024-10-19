@@ -24,7 +24,7 @@ class PrimeFactorDecomposition(Scene):
         # Vertical line
         vertical_line = Line(
             start=primes_group.get_bottom() + DOWN * 0.5,
-            end=DOWN * 3
+            end=DOWN * 2
         )
         self.play(Create(vertical_line))
 
@@ -136,27 +136,37 @@ class PrimeFactorDecomposition(Scene):
         # After the decomposition loop
         # print(factor_counts)  # Debugging
 
-        # Build the LaTeX string for the product of factors
-        factor_texts = [factor.get_tex_string() for factor in factor_mobjects]
-        product_string = " \\times ".join(factor_texts)
-        final_expression = MathTex(f"126 = {product_string}")
-        final_expression.to_edge(DOWN, buff=1)  # Move up from bottom edge
+        # Build the LaTeX string for the product of factors, isolating "3 \\times 3"
+        product_string = "126 = 2 \\times {3 \\times 3} \\times 7"
+        final_expression = MathTex(
+            product_string,
+            substrings_to_isolate=["3 \\times 3"]
+        )
+        final_expression.to_edge(DOWN, buff=1)
         self.play(Write(final_expression))
 
-        # Build the LaTeX string for the expression with exponents
-        exponent_strings = []
-        for prime in sorted(factor_counts.keys()):
-            count = factor_counts[prime]
-            if count == 1:
-                exponent_strings.append(f"{prime}")
-            else:
-                exponent_strings.append(f"{prime}^{{{count}}}")
+        # Create a rectangle around "3 × 3"
+        three_times_three = final_expression.get_part_by_tex("3 \\times 3")
+        rect_around_three_times_three = SurroundingRectangle(three_times_three, color=YELLOW)
+        self.play(Create(rect_around_three_times_three))
 
-        exponent_string = " \\times ".join(exponent_strings)
-        final_expression_with_powers = MathTex(f"126 = {exponent_string}")
-
-        # Position the final expression with powers below the previous final expression
+        # Build the LaTeX string for the expression with exponents, isolating "3^{2}"
+        exponent_string = "126 = 2 \\times {3^{2}} \\times 7"
+        final_expression_with_powers = MathTex(
+            exponent_string,
+            substrings_to_isolate=["3^{2}"]
+        )
         final_expression_with_powers.next_to(final_expression, DOWN, buff=0.3)
 
-        self.play(Write(final_expression_with_powers))
-        self.wait(2)  # Pause to see the final expressions
+        # Transform the final expression to the one with exponents
+        self.play(
+            TransformMatchingTex(
+                final_expression.copy(),
+                final_expression_with_powers,
+                path_alphas=[0, 1],
+                transform_mismatches=True
+            ),
+            FadeOut(rect_around_three_times_three)
+        )
+
+        self.wait(2)
