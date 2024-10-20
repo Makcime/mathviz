@@ -1,5 +1,7 @@
-from manim import *
 from collections import defaultdict
+
+from manim import *
+
 
 class PrimeFactorDecomposition(Scene):
     def construct(self):
@@ -22,15 +24,12 @@ class PrimeFactorDecomposition(Scene):
         self.play(Write(primes_group))
 
         # Vertical line
-        vertical_line = Line(
-            start=primes_group.get_bottom() + DOWN * 0.5,
-            end=DOWN * 2
-        )
+        vertical_line = Line(start=primes_group.get_bottom() + DOWN * 0.5, end=DOWN * 2)
         self.play(Create(vertical_line))
 
         # Number 126 at the top
         number_126 = MathTex("126")
-        number_126.next_to(vertical_line.get_top(), LEFT)
+        number_126.next_to(vertical_line.get_top() + DOWN * 0.2, LEFT)
         self.play(Write(number_126))
 
         # Initialize variables for the decomposition
@@ -62,20 +61,23 @@ class PrimeFactorDecomposition(Scene):
 
                     # Write division equation on the right
                     new_number = current_number // prime
-                    division_eq = MathTex(f"{current_number} \\div {prime} = {new_number}")
+                    division_eq = MathTex(
+                        f"{current_number} \\div {prime} = {new_number}"
+                    )
                     if division_equations:
-                        division_eq.next_to(division_equations[-1], DOWN, aligned_edge=RIGHT)
+                        division_eq.next_to(
+                            division_equations[-1], DOWN, aligned_edge=RIGHT
+                        )
                     else:
                         division_eq.to_edge(RIGHT).shift(UP)
+
                     self.play(Write(division_eq))
                     division_equations.append(division_eq)
 
                     # Place new number under the current one, aligned on the right
                     number_new = MathTex(f"{new_number}")
                     number_new.next_to(number_mobject, DOWN, aligned_edge=RIGHT)
-                    self.play(
-                        TransformFromCopy(division_eq[-1], number_new)
-                    )
+                    self.play(TransformFromCopy(division_eq[-1], number_new))
                     number_mobjects.append(number_new)
 
                     # Update current number and mobject
@@ -83,10 +85,7 @@ class PrimeFactorDecomposition(Scene):
                     number_mobject = number_new
 
                     # Fade out division equation and prime highlight
-                    self.play(
-                        FadeOut(division_eq),
-                        FadeOut(rect)
-                    )
+                    self.play(FadeOut(division_eq), FadeOut(rect))
 
                     break  # Break the inner loop to restart from the smallest prime
             else:
@@ -116,9 +115,7 @@ class PrimeFactorDecomposition(Scene):
                 # Place number 1 under the current number, aligned on the right
                 number_new = MathTex("1")
                 number_new.next_to(number_mobject, DOWN, aligned_edge=RIGHT)
-                self.play(
-                    TransformFromCopy(division_eq[-1], number_new)
-                )
+                self.play(TransformFromCopy(division_eq[-1], number_new))
                 number_mobjects.append(number_new)
 
                 # Update current number and mobject
@@ -126,20 +123,14 @@ class PrimeFactorDecomposition(Scene):
                 number_mobject = number_new
 
                 # Fade out division equation and prime highlight
-                self.play(
-                    FadeOut(division_eq),
-                    FadeOut(rect)
-                )
+                self.play(FadeOut(division_eq), FadeOut(rect))
 
         # Build the LaTeX string for the product of factors, isolating "3 \\times 3"
         product_string = "126 = 2 \\times {3 \\times 3} \\times 7"
         final_expression = MathTex(
-            product_string,
-            substrings_to_isolate=["3 \\times 3"]
+            product_string, substrings_to_isolate=["3 \\times 3"]
         )
         final_expression.to_edge(DOWN, buff=1)
-
-        # New animation: Square around all primes on the right of the vertical line, transform them to the final expression
 
         # Group all factor mobjects
         factors_group = VGroup(*factor_mobjects)
@@ -155,28 +146,26 @@ class PrimeFactorDecomposition(Scene):
         factors_copy.target.move_to(final_expression.get_center())
 
         # Move factors to the final expression position
-        # self.play(MoveToTarget(factors_copy))
+        self.play(MoveToTarget(factors_copy))
 
         # Transform factors into the final expression
         self.play(
-            TransformMatchingTex(
-                factors_copy,
-                final_expression
-            ),
-            FadeOut(rect_around_factors)
+            TransformMatchingTex(factors_copy, final_expression),
+            FadeOut(rect_around_factors),
         )
 
         # Continue with the rectangle around "3 × 3" and the exponentiation
         # Create a rectangle around "3 × 3" in the final expression
         three_times_three = final_expression.get_part_by_tex("3 \\times 3")
-        rect_around_three_times_three = SurroundingRectangle(three_times_three, color=YELLOW)
+        rect_around_three_times_three = SurroundingRectangle(
+            three_times_three, color=YELLOW
+        )
         self.play(Create(rect_around_three_times_three))
 
         # Build the LaTeX string for the expression with exponents, isolating "3^{2}"
         exponent_string = "126 = 2 \\times {3^{2}} \\times 7"
         final_expression_with_powers = MathTex(
-            exponent_string,
-            substrings_to_isolate=["3^{2}"]
+            exponent_string, substrings_to_isolate=["3^{2}"]
         )
         final_expression_with_powers.next_to(final_expression, DOWN, buff=0.3)
 
@@ -186,9 +175,9 @@ class PrimeFactorDecomposition(Scene):
                 final_expression.copy(),
                 final_expression_with_powers,
                 path_alphas=[0, 1],
-                transform_mismatches=True
+                transform_mismatches=True,
             ),
-            FadeOut(rect_around_three_times_three)
+            FadeOut(rect_around_three_times_three),
         )
 
         self.wait(2)
