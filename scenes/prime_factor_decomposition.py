@@ -5,6 +5,7 @@ from manim import *
 
 class PrimeFactorDecomposition(Scene):
     def construct(self):
+        self.next_section()
         # List of primes under 20
         self.primes = [2, 3, 5, 7, 11, 13, 17, 19]
         primes_texts = [MathTex(str(p)) for p in self.primes]
@@ -24,12 +25,14 @@ class PrimeFactorDecomposition(Scene):
         self.play(Write(self.primes_group))
 
         # Decompose 126 and move it to the left
+        self.next_section()
         group_126 = self.decompose_number(126, LEFT * 4.8)
 
         # Pause before starting the next decomposition
         self.wait(1)
 
         # Decompose 120
+        self.next_section()
         group_120 = self.decompose_number(120, RIGHT * 4)
 
         self.wait(2)
@@ -211,37 +214,75 @@ class PrimeFactorDecomposition(Scene):
 
         # Build the LaTeX string for the product of factors, isolating repeated factors
         factor_strings = []
+        isolated_factors = []
         for prime, count in sorted(factor_counts.items()):
             if count == 1:
                 factor_strings.append(f"{prime}")
             else:
-                factor_strings.extend([f"{prime}"] * count)
+                factors = [f"{prime}"] * count
+                # Join repeated factors with \times and enclose in braces
+                repeated_factors = " \\times ".join(factors)
+                factor_strings.append(f"{{{repeated_factors}}}")
+                isolated_factors.append(repeated_factors)
         product_string = f"{number} = " + " \\times ".join(factor_strings)
-        final_expression = MathTex(product_string)
-        final_expression.to_edge(DOWN, buff=1)  # .shift(LEFT * 1.5)
 
+        # Build the final expression, isolating repeated factors
+        final_expression = MathTex(
+            product_string, substrings_to_isolate=isolated_factors
+        )
+        final_expression.to_edge(DOWN, buff=1)
         self.play(FadeTransform(expression, final_expression))
         decomposition_group.add(final_expression)
 
         # Transform factors into the final expression at the bottom
         self.play(FadeOut(rect_around_factors))
 
-        # Build the LaTeX string for the expression with exponents
-        exponent_strings = []
-        for prime, count in sorted(factor_counts.items()):
-            if count == 1:
-                exponent_strings.append(f"{prime}")
-            else:
-                exponent_strings.append(f"{prime}^{{{count}}}")
-        exponent_string = f"{number} = " + " \\times ".join(exponent_strings)
-        final_expression_with_powers = MathTex(exponent_string)
-        final_expression_with_powers.next_to(final_expression, DOWN, buff=0.3)
-        decomposition_group.add(final_expression_with_powers)
+        # If there are repeated factors, create rectangle and perform exponentiation
+        if isolated_factors:
+            # Handle the first set of repeated factors (for simplicity)
+            repeated_factors_tex = isolated_factors[0]
+            # Create a rectangle around the repeated factors in the final expression
+            repeated_factors_mobject = final_expression.get_part_by_tex(
+                repeated_factors_tex
+            )
+            rect_around_repeated = SurroundingRectangle(
+                repeated_factors_mobject, color=YELLOW
+            )
+            self.play(Create(rect_around_repeated))
+            # decomposition_group.add(rect_around_repeated)
 
-        # Transform the final expression to the one with exponents
-        self.play(
-            TransformMatchingTex(final_expression.copy(), final_expression_with_powers)
-        )
+            # Build the LaTeX string for the expression with exponents
+            exponent_strings = []
+            ssrt_to_iso = ""
+            for prime, count in sorted(factor_counts.items()):
+                if count == 1:
+                    exponent_strings.append(f"{prime}")
+                else:
+                    ssrt_to_iso = f"{prime}^{{{count}}}"
+                    exponent_strings.append(ssrt_to_iso)
+            exponent_string = f"{number} = " + " \\times ".join(exponent_strings)
+
+            final_expression_with_powers = MathTex(
+                exponent_string,
+                substrings_to_isolate=ssrt_to_iso,
+            )
+            final_expression_with_powers.next_to(final_expression, DOWN, buff=0.3)
+            decomposition_group.add(final_expression_with_powers)
+
+            # Transform the final expression to the one with exponents
+            self.play(
+                TransformMatchingTex(
+                    final_expression.copy(),
+                    final_expression_with_powers,
+                    path_alphas=[0, 1],
+                    transform_mismatches=True,
+                    # fade_transform_mismatches=True,
+                ),
+                FadeOut(rect_around_repeated),
+            )
+        else:
+            # No repeated factors, so no need for rectangle or exponentiation
+            final_expression_with_powers = final_expression
 
         self.wait(1)
 
