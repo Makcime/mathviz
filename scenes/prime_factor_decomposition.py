@@ -13,7 +13,7 @@ class PrimeFactorDecomposition(Scene):
         primes_group = VGroup(*primes_texts).arrange(RIGHT, buff=0.5)
 
         # Primes label
-        primes_label = Text("Primes under 20:")
+        primes_label = Text("Nombres premiers < 20:")
         primes_label.to_edge(UP).shift(DOWN * 0.5)
 
         # Position primes group
@@ -69,7 +69,7 @@ class PrimeFactorDecomposition(Scene):
                             division_equations[-1], DOWN, aligned_edge=RIGHT
                         )
                     else:
-                        division_eq.to_edge(RIGHT).shift(UP)
+                        division_eq.to_edge(RIGHT).shift(UP).shift(LEFT * 2)
 
                     self.play(Write(division_eq))
                     division_equations.append(division_eq)
@@ -125,13 +125,6 @@ class PrimeFactorDecomposition(Scene):
                 # Fade out division equation and prime highlight
                 self.play(FadeOut(division_eq), FadeOut(rect))
 
-        # Build the LaTeX string for the product of factors, isolating "3 \\times 3"
-        product_string = "126 = 2 \\times {3 \\times 3} \\times 7"
-        final_expression = MathTex(
-            product_string, substrings_to_isolate=["3 \\times 3"]
-        )
-        final_expression.to_edge(DOWN, buff=1)
-
         # Group all factor mobjects
         factors_group = VGroup(*factor_mobjects)
 
@@ -139,18 +132,71 @@ class PrimeFactorDecomposition(Scene):
         rect_around_factors = SurroundingRectangle(factors_group, color=BLUE)
         self.play(Create(rect_around_factors))
 
+        # Build the initial expression "126 ="
+        initial_expression = MathTex("126", "=")
+        initial_expression.to_edge(DOWN, buff=1).shift(LEFT * 1.5)
+        self.play(Write(initial_expression))
+
+        # Initialize the expression VGroup with the initial expression
+        expression = VGroup(*initial_expression)
+
+        # For alignment, we can extract the "=" symbol
+        equals = initial_expression[1]
+
+        # Iterate over each factor and animate them one by one
+        for idx, factor in enumerate(factor_mobjects):
+            # Copy the factor to animate
+            factor_copy = factor.copy()
+
+            # Determine the positions
+            # Get the last element in the expression to position the times symbol
+            last_element = expression[-1]
+
+            # Create the multiplication symbol (except for the first factor)
+            if idx == 0:
+                # No multiplication symbol before the first factor
+                times = None
+            else:
+                times = MathTex("\\times")
+                times.next_to(last_element, RIGHT, buff=0.2)
+                self.play(Write(times))
+                expression.add(times)
+
+            # Position the factor copy next to the last element (times symbol or equals sign)
+            if times:
+                factor_copy.next_to(times, RIGHT, buff=0.2)
+            else:
+                factor_copy.next_to(equals, RIGHT, buff=0.2)
+
+            # Animate the factor moving down to its position
+            self.play(TransformFromCopy(factor, factor_copy))
+
+            # Add the factor to the expression VGroup
+            expression.add(factor_copy)
+
+        # Build the LaTeX string for the product of factors, isolating "3 \\times 3"
+        product_string = "126 = 2 \\times {3 \\times 3} \\times 7"
+        final_expression = MathTex(
+            product_string, substrings_to_isolate=["3 \\times 3"]
+        )
+
+        # final_expression.next_to(vertical_line, DOWN, buff=1)
+        final_expression.to_edge(DOWN, buff=1)
+
+        self.play(FadeTransform(expression, final_expression))
+
         # Transform factors into the final expression at the bottom
         # Position the factors copy at the location of the final expression
         factors_copy = factors_group.copy()
-        factors_copy.generate_target()
-        factors_copy.target.move_to(final_expression.get_center())
+        # factors_copy.generate_target()
+        # factors_copy.target.move_to(final_expression.get_center())
 
         # Move factors to the final expression position
-        self.play(MoveToTarget(factors_copy))
+        # self.play(MoveToTarget(factors_copy))
 
         # Transform factors into the final expression
         self.play(
-            TransformMatchingTex(factors_copy, final_expression),
+            # TransformMatchingTex(factors_copy, final_expression),
             FadeOut(rect_around_factors),
         )
 
