@@ -222,15 +222,16 @@ class PrimeFactorDecomposition(Scene):
                 factors = [f"{prime}"] * count
                 # Join repeated factors with \times and enclose in braces
                 repeated_factors = " \\times ".join(factors)
-                factor_strings.append(f"{{{repeated_factors}}}")
+                factor_strings.append(f"{{{{{repeated_factors}}}}}")
                 isolated_factors.append(repeated_factors)
         product_string = f"{number} = " + " \\times ".join(factor_strings)
 
         # Build the final expression, isolating repeated factors
         final_expression = MathTex(
-            product_string, substrings_to_isolate=isolated_factors
+            product_string  # , substrings_to_isolate=isolated_factors
         )
-        final_expression.to_edge(DOWN, buff=1)
+        # final_expression.to_edge(DOWN, buff=1)
+        final_expression.move_to(expression.get_center())
         self.play(FadeTransform(expression, final_expression))
         decomposition_group.add(final_expression)
 
@@ -258,18 +259,19 @@ class PrimeFactorDecomposition(Scene):
                 if count == 1:
                     exponent_strings.append(f"{prime}")
                 else:
-                    ssrt_to_iso = f"{prime}^{{{count}}}"
+                    ssrt_to_iso = f"{{{{{prime}^{{{count}}} }}}}"
                     exponent_strings.append(ssrt_to_iso)
             exponent_string = f"{number} = " + " \\times ".join(exponent_strings)
 
             final_expression_with_powers = MathTex(
                 exponent_string,
-                substrings_to_isolate=ssrt_to_iso,
+                # substrings_to_isolate=ssrt_to_iso,
             )
             final_expression_with_powers.next_to(final_expression, DOWN, buff=0.3)
             decomposition_group.add(final_expression_with_powers)
 
             # Transform the final expression to the one with exponents
+            print(exponent_string, product_string)
             self.play(
                 TransformMatchingTex(
                     final_expression.copy(),
