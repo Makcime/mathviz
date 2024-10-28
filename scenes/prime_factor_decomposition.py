@@ -26,17 +26,41 @@ class PrimeFactorDecomposition(Scene):
 
         # Decompose 126 and move it to the left
         self.next_section()
-        group_126 = self.decompose_number(126, LEFT * 4.8)
+        group_126, exp_126 = self.decompose_number(126, LEFT * 4.8)
 
         # Pause before starting the next decomposition
         self.wait(1)
 
         # Decompose 120
         self.next_section()
-        group_120 = self.decompose_number(120, RIGHT * 4)
+        group_120, exp_120 = self.decompose_number(120, RIGHT * 4)
 
         self.wait(2)
         # Optionally, you can adjust the positions or add more numbers
+
+        # Add label and primes to scene
+        self.play(FadeOut(self.primes_label, self.primes_group))
+
+        self.wait(2)
+
+        self.next_section()
+        # print("exp 120 : ", exp_120)
+        # twos = exp_120.get_part_by_tex("2^{3} ")
+        # rect_around_fact = SurroundingRectangle(twos, color=YELLOW)
+        # self.play(Create(rect_around_fact))
+
+        # Get the "2" parts in exp_126 and exp_120
+        twos_126 = exp_126.get_parts_by_tex("2")
+        twos_120 = exp_120.get_parts_by_tex("2^{3}")
+
+        # Create rectangles around them
+        rect_126 = SurroundingRectangle(twos_126, color=YELLOW)
+        rect_120 = SurroundingRectangle(twos_120, color=YELLOW)
+
+        # Play the animations to create the rectangles simultaneously
+        self.play(Create(rect_126), Create(rect_120))
+
+        self.wait(2)
 
     def decompose_number(self, number, shift_amount):
         # Create a group to hold all elements related to this decomposition
@@ -230,7 +254,7 @@ class PrimeFactorDecomposition(Scene):
         final_expression = MathTex(
             product_string  # , substrings_to_isolate=isolated_factors
         )
-        # final_expression.to_edge(DOWN, buff=1)
+        final_expression.to_edge(DOWN, buff=1)
         final_expression.move_to(expression.get_center())
         self.play(FadeTransform(expression, final_expression))
         decomposition_group.add(final_expression)
@@ -291,4 +315,82 @@ class PrimeFactorDecomposition(Scene):
         # Shift the entire decomposition group
         self.play(decomposition_group.animate.shift(shift_amount))
 
-        return decomposition_group
+        return decomposition_group, final_expression_with_powers
+
+
+class PGCD(Scene):
+    def construct(self):
+        # Create the mathematical expression with double braces
+
+        intro = Tex(
+            r"Voici la décomposition en facteurs premiers \\ de 120 et 126 :",
+            tex_template=TexFontTemplates.french_cursive,
+        )
+        # self.play(Write(intro))
+
+        decomp_120 = MathTex(
+            "120 = {{ 2^{3} }} \\times {{ 3 }} \\times {{ 5 }} {{ }}",
+            tex_template=TexFontTemplates.french_cursive,
+            # font_size=144,
+        )
+        decomp_120_ = MathTex(
+            "120 = {{ 2^{3} }} \\times {{ 3^{1} }} \\times {{ 5^{1} }} \\times {{7^{0} }}",
+            tex_template=TexFontTemplates.french_cursive,
+            # font_size=144,
+        )
+
+        decomp_120.next_to(intro, DOWN)
+        decomp_120_.align_to(decomp_120, LEFT)
+        decomp_120_.align_to(decomp_120, UP)
+
+        decomp_126 = MathTex(
+            "126 = {{ 2 }} \\times {{ 3^{2} }} {{ }} \\times {{7}}",
+            tex_template=TexFontTemplates.french_cursive,
+            # font_size=144,
+        )
+
+        decomp_126_ = MathTex(
+            "126 = {{ 2^{1} }} \\times {{3^{2} }} \\times {{5^{0} }} \\times {{ 7^{1}}}",
+            tex_template=TexFontTemplates.french_cursive,
+            # font_size=144,
+        )
+
+        decomp_126.next_to(decomp_120, DOWN, aligned_edge=LEFT)
+        decomp_126_.align_to(decomp_126, LEFT)
+        decomp_126_.align_to(decomp_126, UP)
+
+        self.play(Write(decomp_120), Write(decomp_126))
+
+        self.play(TransformMatchingTex(decomp_120, decomp_120_))
+        self.wait(2)
+        self.play(TransformMatchingTex(decomp_126, decomp_126_))
+        self.wait(2)
+
+        # Animate changing the color of "2^{3}" to blue
+        self.play(
+            decomp_120_[1].animate.set_color(RED),
+            decomp_126_[1].animate.set_color(GREEN),
+        )
+        self.play(
+            decomp_120_[3].animate.set_color(GREEN),
+            decomp_126_[3].animate.set_color(RED),
+        )
+        self.play(
+            decomp_120_[5].animate.set_color(RED),
+            decomp_126_[5].animate.set_color(GREEN),
+        )
+        self.play(
+            decomp_120_[7].animate.set_color(GREEN),
+            decomp_126_[7].animate.set_color(RED),
+        )
+        self.wait(2)
+
+        PGCD = MathTex(
+            "PGCD(120, 126) = {{ 2^{1} }} \\times {{3^{1} }} \\times {{5^{0} }} \\times {{ 7^{0}}}",
+            tex_template=TexFontTemplates.french_cursive,
+            # font_size=144,
+        )
+
+        PGCD.next_to(decomp_126_, DOWN, buff=1.5)
+
+        self.play(TransformMatchingTex(decomp_126, decomp_126_))
