@@ -320,40 +320,55 @@ class PrimeFactorDecomposition(Scene):
 
 class PGCD(Scene):
     def construct(self):
-        # Create the mathematical expression with double braces
-
-        intro = Tex(
-            r"Voici la décomposition en facteurs premiers \\ de 120 et 126 :",
-            tex_template=TexFontTemplates.french_cursive,
-        )
-        # self.play(Write(intro))
-
+        # Decomposition of 120 with exponents
         decomp_120 = MathTex(
-            "120 = {{ 2^{3} }} \\times {{ 3 }} \\times {{ 5 }} {{ }}",
-            tex_template=TexFontTemplates.french_cursive,
-            # font_size=144,
-        )
-        decomp_120_ = MathTex(
-            "120 = {{ 2^{3} }} \\times {{ 3^{1} }} \\times {{ 5^{1} }} \\times {{7^{0} }}",
-            tex_template=TexFontTemplates.french_cursive,
-            # font_size=144,
+            "120 =",
+            "{ 2^{3} }",
+            "\\times",
+            "{ 3 }",
+            "\\times",
+            "{ 5 }",
+            "\\times",
+            "{ }",
         )
 
-        decomp_120.next_to(intro, DOWN)
+        decomp_120_ = MathTex(
+            "120 =",
+            "{ 2^{3} }",
+            "\\times",
+            "{ 3^{1} }",
+            "\\times",
+            "{ 5^{1} }",
+            "\\times",
+            "{ 7^{0} }",
+        )
+        # decomp_120.next_to(intro, DOWN)
+
+        # Decomposition of 126 with exponents
+        decomp_126 = MathTex(
+            "126 =",
+            "{ 2 }",
+            "\\times",
+            "{ 3^{2} }",
+            "\\times",
+            "{ }",
+            "\\times",
+            "{ 7 }",
+        )
+        decomp_126_ = MathTex(
+            "126 =",
+            "{ 2^{1} }",
+            "\\times",
+            "{ 3^{2} }",
+            "\\times",
+            "{ 5^{0} }",
+            "\\times",
+            "{ 7^{1} }",
+        )
+
+        decomp_120.to_edge(UP).shift(DOWN * 0.5)
         decomp_120_.align_to(decomp_120, LEFT)
         decomp_120_.align_to(decomp_120, UP)
-
-        decomp_126 = MathTex(
-            "126 = {{ 2 }} \\times {{ 3^{2} }} {{ }} \\times {{7}}",
-            tex_template=TexFontTemplates.french_cursive,
-            # font_size=144,
-        )
-
-        decomp_126_ = MathTex(
-            "126 = {{ 2^{1} }} \\times {{3^{2} }} \\times {{5^{0} }} \\times {{ 7^{1}}}",
-            tex_template=TexFontTemplates.french_cursive,
-            # font_size=144,
-        )
 
         decomp_126.next_to(decomp_120, DOWN, aligned_edge=LEFT)
         decomp_126_.align_to(decomp_126, LEFT)
@@ -368,29 +383,130 @@ class PGCD(Scene):
 
         # Animate changing the color of "2^{3}" to blue
         self.play(
-            decomp_120_[1].animate.set_color(RED),
-            decomp_126_[1].animate.set_color(GREEN),
+            decomp_120_[1].animate.set_color(GREEN),
+            decomp_126_[1].animate.set_color(RED),
         )
         self.play(
-            decomp_120_[3].animate.set_color(GREEN),
-            decomp_126_[3].animate.set_color(RED),
+            decomp_120_[3].animate.set_color(RED),
+            decomp_126_[3].animate.set_color(GREEN),
         )
         self.play(
-            decomp_120_[5].animate.set_color(RED),
-            decomp_126_[5].animate.set_color(GREEN),
+            decomp_120_[5].animate.set_color(GREEN),
+            decomp_126_[5].animate.set_color(RED),
         )
         self.play(
-            decomp_120_[7].animate.set_color(GREEN),
-            decomp_126_[7].animate.set_color(RED),
+            decomp_120_[7].animate.set_color(RED),
+            decomp_126_[7].animate.set_color(GREEN),
         )
+
+        self.wait(1)
+
+        # Create the PGCD expression with terms as separate submobjects
+        PGCD = MathTex(
+            "PGCD(120, 126) =",
+            "{ 2^{1} }",
+            "\\times",
+            "{ 3^{1} }",
+            "\\times",
+            "{ 5^{0} }",
+            "\\times",
+            "{ 7^{0} }",
+            # tex_template=TexFontTemplates.french_cursive,
+        )
+        # PGCD[0].next_to(decomp_126[0], DOWN, aligned_edge=RIGHT)
+        # for i in range(1, 8):
+        #     PGCD[i].next_to(PGCD[i - 1], RIGHT)
+        PGCD.next_to(decomp_126_, DOWN, buff=1, aligned_edge=RIGHT)
+
+        # Set the terms to be invisible initially
+        for index in [1, 3, 5, 7]:
+            PGCD[index].set_opacity(0)
+
+        # Write the PGCD label and multiplication signs
+        self.play(Write(PGCD[0]))  # "PGCD(120, 126) ="
+        self.play(
+            FadeIn(PGCD[2]),  # "\\times"
+            FadeIn(PGCD[4]),
+            FadeIn(PGCD[6]),
+        )
+        self.wait(1)
+
+        # Set the PGCD terms to full opacity and color them red
+        for index in [1, 3, 5, 7]:
+
+            PGCD[index].set_color(RED)
+            source = decomp_120_
+            if index in [1, 5]:
+                source = decomp_126_
+            self.play(
+                ReplacementTransform(source[index].copy(), PGCD[index]),
+                PGCD[index].animate.set_opacity(1),
+            )
+
         self.wait(2)
 
-        PGCD = MathTex(
-            "PGCD(120, 126) = {{ 2^{1} }} \\times {{3^{1} }} \\times {{5^{0} }} \\times {{ 7^{0}}}",
-            tex_template=TexFontTemplates.french_cursive,
-            # font_size=144,
+        PGCD_final = MathTex(r"= 2 \times 3 = 6")
+        PGCD_final.next_to(PGCD, DOWN).align_to(PGCD[1], LEFT).shift(LEFT * 0.5)
+
+        self.play(Write(PGCD_final))
+
+        # Create the PGCD expression with terms as separate submobjects
+        PPCM = MathTex(
+            "PPCM(120, 126) =",
+            "{ 2^{3} }",
+            "\\times",
+            "{ 3^{2} }",
+            "\\times",
+            "{ 5^{1} }",
+            "\\times",
+            "{ 7^{1} }",
+            # tex_template=TexFontTemplates.french_cursive,
         )
+        # PGCD[0].next_to(decomp_126[0], DOWN, aligned_edge=RIGHT)
+        # for i in range(1, 8):
+        #     PGCD[i].next_to(PGCD[i - 1], RIGHT)
+        PPCM.next_to(PGCD_final, DOWN).align_to(PGCD, LEFT)
 
-        PGCD.next_to(decomp_126_, DOWN, buff=1.5)
+        # Set the terms to be invisible initially
+        for index in [1, 3, 5, 7]:
+            PPCM[index].set_opacity(0)
 
-        self.play(TransformMatchingTex(decomp_126, decomp_126_))
+        # Write the PGCD label and multiplication signs
+        self.play(Write(PPCM[0]))  # "PPCM(120, 126) ="
+        self.play(
+            FadeIn(PPCM[2]),  # "\\times"
+            FadeIn(PPCM[4]),
+            FadeIn(PPCM[6]),
+        )
+        self.wait(1)
+
+        # Set the PPCM terms to full opacity and color them red
+        for index in [1, 3, 5, 7]:
+
+            PPCM[index].set_color(GREEN)
+            source = decomp_126_
+            if index in [1, 5]:
+                source = decomp_120_
+            self.play(
+                ReplacementTransform(source[index].copy(), PPCM[index]),
+                PPCM[index].animate.set_opacity(1),
+            )
+
+        self.wait(2)
+
+        PPCM_final = MathTex(
+            "=",
+            "{ 2^{3} }",
+            "\\times",
+            "{ 3^{2} }",
+            "\\times",
+            "{ 5 }",
+            "\\times",
+            "{ 7 }",
+            "= 2520",
+            # tex_template=TexFontTemplates.french_cursive,
+        )
+        PPCM_final.next_to(PPCM, DOWN).align_to(PPCM[1], LEFT).shift(LEFT * 0.5)
+        self.play(Write(PPCM_final))
+
+        self.wait(2)
