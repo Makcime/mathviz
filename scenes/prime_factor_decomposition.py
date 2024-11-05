@@ -1,5 +1,6 @@
 from collections import defaultdict
 
+import sympy
 from manim import *
 
 
@@ -350,7 +351,7 @@ class PGCD(Scene):
             "{ 2 }",
             "\\times",
             "{ 3^{2} }",
-            "\\times",
+            "{ }",
             "{ }",
             "\\times",
             "{ 7 }",
@@ -509,4 +510,254 @@ class PGCD(Scene):
         PPCM_final.next_to(PPCM, DOWN).align_to(PPCM[1], LEFT).shift(LEFT * 0.5)
         self.play(Write(PPCM_final))
 
+        self.wait(2)
+
+
+class GCDLCMScene(Scene):
+    def construct(self):
+        # Define the two numbers (you can change these to any integers)
+        num1 = 120
+        num2 = 126
+
+        # Compute the prime factorizations using sympy
+        factors1 = sympy.factorint(num1)
+        factors2 = sympy.factorint(num2)
+
+        # Get the set of all primes involved
+        primes = sorted(set(factors1.keys()).union(factors2.keys()))
+
+        # Build the exponents lists for both numbers
+        exponents1 = [factors1.get(p, 0) for p in primes]
+        exponents2 = [factors2.get(p, 0) for p in primes]
+
+        # Compute GCD and LCM exponents
+        gcd_exponents = [min(e1, e2) for e1, e2 in zip(exponents1, exponents2)]
+        lcm_exponents = [max(e1, e2) for e1, e2 in zip(exponents1, exponents2)]
+
+        # Compute GCD and LCM numerical values
+        gcd_value = sympy.gcd(num1, num2)
+        lcm_value = sympy.lcm(num1, num2)
+
+        # Function to get factor parts with exponents as separate submobjects
+        def get_factor_parts(p, e):
+            if e == 0:
+                return [f"{p}", "^", "{{", "0", "}}"]
+            elif e == 1:
+                return [f"{p}"]
+            else:
+                return [f"{p}", "^", "{{", f"{e}", "}}"]
+
+        # Build the MathTex expressions and record exponent indices
+        def build_decomposition(num, exponents, other_exponents):
+            decomp_tex = [f"{num}", "="]
+            exponent_indices = {}
+            current_index = 2  # Start after number and '='
+
+            for idx, p in enumerate(primes):
+                e = exponents[idx]
+                oe = other_exponents[idx]
+                factor_parts = get_factor_parts(p, e)
+                decomp_tex.extend(factor_parts)
+
+                # Determine the index of the exponent in decomp_tex
+                if e != 1:
+                    # Exponent exists
+                    exponent_global_index = current_index + factor_parts.index("{{") + 1
+                    exponent_indices[p] = (exponent_global_index, e, oe)
+                current_index += len(factor_parts)
+
+                # Add multiplication sign if not the last prime
+                if idx < len(primes) - 1:
+                    decomp_tex.append("\\times")
+                    current_index += 1
+
+            return decomp_tex, exponent_indices
+
+        # Build decompositions for num1 and num2
+        decomp1_tex, decomp1_exp_indices = build_decomposition(
+            num1, exponents1, exponents2
+        )
+        decomp2_tex, decomp2_exp_indices = build_decomposition(
+            num2, exponents2, exponents1
+        )
+
+        # Create MathTex objects
+        decomp1 = MathTex(*decomp1_tex)
+        decomp1.to_edge(UP)
+        decomp2 = MathTex(*decomp2_tex)
+        decomp2.next_to(decomp1, DOWN, aligned_edge=LEFT)
+
+        # Write the decompositions on the screen
+        self.play(Write(decomp1), Write(decomp2))
+        self.wait(1)
+
+        # Color the exponents: RED for smaller, GREEN for larger
+        # For decomp1
+        for p in primes:
+            if p in decomp1_exp_indices:
+                exp_idx, e1, e2 = decomp1_exp_indices[p]
+                if e1 > e2:
+                    color = GREEN
+                elif e1 < e2:
+                    color = RED
+                else:
+                    color = RED  # Equal exponents, color both RED
+                decomp1[exp_idx].set_color(color)
+
+        # For decomp2
+        for p in primes:
+            if p in decomp2_exp_indices:
+                exp_idx, e2, e1 = decomp2_exp_indices[p]
+                if e2 > e1:
+                    color = GREEN
+                elif e2 < e1:
+                    color = RED
+                else:
+                    color = RED
+                decomp2[exp_idx].set_color(color)
+
+        self.wait(1)
+
+        # Create the GCD expression
+        def build_result_expression(label, exponents):
+            result_tex = [label]
+            exponent_indices = {}
+            current_index = 1  # Start after label
+
+            for idx, p in enumerate(primes):
+                e = exponents[idx]
+                factor_parts = get_factor_parts(p, e)
+                result_tex.extend(factor_parts)
+
+                # Record exponent indices
+                if e != 1:
+                    exponent_global_index = current_index + factor_parts.index("{{") + 1
+                    exponent_indices[p] = (exponent_global_index, e)
+                current_index += len(factor_parts)
+
+                # Add multiplication sign if not the last prime
+                if idx < len(primes) - 1:
+                    result_tex.append("\\times")
+                    current_index += 1
+
+            return result_tex, exponent_indices
+
+        # Build GCD expression
+        gcd_label = f"\\text{{GCD}}({num1}, {num2}) ="
+        gcd_tex, gcd_exp_indices = build_result_expression(gcd_label, gcd_exponents)
+        gcd_expr = MathTex(*gcd_tex)
+        gcd_expr.next_to(decomp2, DOWN, aligned_edge=LEFT)
+
+        # Set the exponents to be invisible initially
+        for p in primes:
+            if p in gcd_exp_indices:
+                idx, e = gcd_exp_indices[p]
+                gcd_expr[idx].set_opacity(0)
+
+        # Write the GCD label and multiplication signs
+        self.play(Write(gcd_expr[0]))  # "GCD(num1, num2) ="
+        for mob in gcd_expr[1:]:
+            if hasattr(mob, "tex_string") and mob.tex_string == "\\times":
+                self.play(FadeIn(mob))
+
+        self.wait(1)
+
+        # Animate the exponents transforming into the GCD terms
+        for p in primes:
+            e = factors1.get(p, 0)
+            e2 = factors2.get(p, 0)
+            gcd_e = min(e, e2)
+            if gcd_e > 0:
+                # Determine source exponent (smaller exponent, colored RED)
+                if e <= e2:
+                    source_expr = decomp1
+                    source_exp_indices = decomp1_exp_indices
+                else:
+                    source_expr = decomp2
+                    source_exp_indices = decomp2_exp_indices
+
+                # Only proceed if exponent exists in source expression
+                if p in source_exp_indices:
+                    source_exp_idx = source_exp_indices[p][0]
+                else:
+                    continue  # Exponent is 1; no exponent submobject to animate
+
+                # Target exponent in GCD expression
+                target_exp_idx = gcd_exp_indices[p][0]
+
+                # Animate transformation
+                self.play(
+                    ReplacementTransform(
+                        source_expr[source_exp_idx].copy(),
+                        gcd_expr[target_exp_idx].set_opacity(1).set_color(RED),
+                    )
+                )
+
+        self.wait(1)
+
+        # Simplify the GCD to its numerical value
+        gcd_value_tex = f"= {gcd_value}"
+        gcd_value_expr = MathTex(gcd_value_tex)
+        gcd_value_expr.next_to(gcd_expr, RIGHT)
+        self.play(Write(gcd_value_expr))
+        self.wait(1)
+
+        # Build LCM expression
+        lcm_label = f"\\text{{LCM}}({num1}, {num2}) ="
+        lcm_tex, lcm_exp_indices = build_result_expression(lcm_label, lcm_exponents)
+        lcm_expr = MathTex(*lcm_tex)
+        lcm_expr.next_to(gcd_expr, DOWN, aligned_edge=LEFT)
+
+        # Set the exponents to be invisible initially
+        for p in primes:
+            if p in lcm_exp_indices:
+                idx, e = lcm_exp_indices[p]
+                lcm_expr[idx].set_opacity(0)
+
+        # Write the LCM label and multiplication signs
+        self.play(Write(lcm_expr[0]))  # "LCM(num1, num2) ="
+        for mob in lcm_expr[1:]:
+            if hasattr(mob, "tex_string") and mob.tex_string == "\\times":
+                self.play(FadeIn(mob))
+
+        self.wait(1)
+
+        # Animate the exponents transforming into the LCM terms
+        for p in primes:
+            e = factors1.get(p, 0)
+            e2 = factors2.get(p, 0)
+            lcm_e = max(e, e2)
+            if lcm_e > 0:
+                # Determine source exponent (larger exponent, colored GREEN)
+                if e >= e2:
+                    source_expr = decomp1
+                    source_exp_indices = decomp1_exp_indices
+                else:
+                    source_expr = decomp2
+                    source_exp_indices = decomp2_exp_indices
+
+                # Only proceed if exponent exists in source expression
+                if p in source_exp_indices:
+                    source_exp_idx = source_exp_indices[p][0]
+                else:
+                    continue  # Exponent is 1; no exponent submobject to animate
+
+                # Target exponent in LCM expression
+                target_exp_idx = lcm_exp_indices[p][0]
+
+                # Animate transformation
+                self.play(
+                    ReplacementTransform(
+                        source_expr[source_exp_idx].copy(),
+                        lcm_expr[target_exp_idx].set_opacity(1).set_color(GREEN),
+                    )
+                )
+
+        self.wait(1)
+
+        # Simplify the LCM to its numerical value
+        lcm_value_tex = f"= {lcm_value}"
+        lcm_value_expr = MathTex(lcm_value_tex)
+        lcm_value_expr.next_to(lcm_expr, RIGHT)
+        self.play(Write(lcm_value_expr))
         self.wait(2)
