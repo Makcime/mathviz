@@ -1,29 +1,57 @@
 from manim import *
 
 
-class GridScene(Scene):
+class SyScene(Scene):
     def construct(self):
 
-        # Call the function to animate the transformation and get the final text
-        Sy = self.animate_transformation("x", "y", position=UR)
+        # Write the title at the beginning
+        title = Text("Symétrie orthogonale d'axe y", font_size=36)
+        self.play(Write(title))  # Animate the writing of the title
+        self.play(title.animate.to_edge(UP))
 
-        # Move the final text to a new position
-        self.play(Sy.animate.to_corner(UR))
-        # self.play(final_text_2.animate.to_edge(RIGHT))
+        Sy = self.animate_Sy("x", "y")
 
-        self.wait(1)
+        # Fade out the title
+        self.play(Sy.animate.to_corner(UR), FadeOut(title))
 
+        self.drawGrid()
+
+        # Add the label "A (2; -4)" at the top left corner
+        A = MathTex("A (-2; -4)").to_corner(UL)
+        self.play(Write(A))
+        # self.wait(2)
+
+        # Add a point at the location (2, -4)
+        self.drawPoint(self.axes, cx=-2, cy=-4, label="A", color=RED)
+        # self.wait(2)
+
+        SyAA = MathTex("S_{y}(A) = A'").next_to(A, DOWN, aligned_edge=LEFT)
+        self.play(Write(SyAA))
+        # self.wait(2)
+
+        SyA = self.animate_Sy("-2", "-4", position=DOWN, relative_to=SyAA)
+        # self.wait(2)
+
+        self.drawPoint(self.axes, cx=2, cy=-4, label="A'", color=RED)
+        self.wait(3)
+
+    def drawGrid(self):
         # Create the axes
-        axes = Axes(
+        self.axes = Axes(
             x_range=[-5, 5, 1],
             y_range=[-5, 5, 1],
             x_length=7,  # Adjusted to fit within the screen
             y_length=7,  # Adjusted to fit within the screen
-            axis_config={"include_numbers": True, "font_size": 24},
+            axis_config={
+                "include_numbers": True,
+                "font_size": 24,
+                # "tip_length": 1.1,
+                "tip_width": 0.2,
+            },
         )
 
         # Add gridlines
-        grid = NumberPlane(
+        self.grid = NumberPlane(
             x_range=[-5, 5, 1],
             y_range=[-5, 5, 1],
             x_length=7,  # Adjusted to fit within the screen
@@ -32,33 +60,14 @@ class GridScene(Scene):
         )
 
         # Add to scene
-        self.add(grid, axes)
+        # self.add(grid, axes)
 
         # Add x and y labels
-        x_ = axes.get_x_axis_label("x", edge=RIGHT, direction=RIGHT, buff=0.1)
-        y_ = axes.get_y_axis_label("y", edge=UP, direction=UP, buff=0.5)
+        x_ = self.axes.get_x_axis_label("x", edge=RIGHT, direction=RIGHT, buff=0.1)
+        y_ = self.axes.get_y_axis_label("y", edge=UP, direction=UP, buff=0.5)
 
-        # Optionally, you can scale the entire scene
-        self.play(FadeIn(grid, axes, x_, y_))
-
-        # Add the label "A (2; -4)" at the top left corner
-        A = MathTex("A (-2; -4)").to_corner(UL)
-        self.play(Write(A))
-        self.wait(2)
-
-        # Add a point at the location (2, -4)
-        self.drawPoint(axes, cx=-2, cy=-4, label="A", color=RED)
-        self.wait(2)
-
-        SyAA = MathTex("S_{y}(A) = A'").next_to(A, DOWN, aligned_edge=LEFT)
-        self.play(Write(SyAA))
-        self.wait(2)
-
-        SyA = self.animate_transformation("-2", "-4", position=DOWN, relative_to=SyAA)
-        self.wait(2)
-
-        self.drawPoint(axes, cx=2, cy=-4, label="A'", color=RED)
-        self.wait(2)
+        self.xyPlane = VGroup(self.grid, self.axes, x_, y_)
+        self.play(FadeIn(self.xyPlane))
 
     def drawPoint(self, axes, cx, cy, label="P", color=RED):
         # Add a point at the location (2, -4)
@@ -68,7 +77,7 @@ class GridScene(Scene):
         lp = MathTex(label).next_to(p, UR)
         self.play(FadeIn(p), Write(lp))
 
-    def animate_transformation(self, x_val, y_val, position=ORIGIN, relative_to=None):
+    def animate_Sy(self, x_val, y_val, position=ORIGIN, relative_to=None):
         # Determine the opposite of x_val
         if x_val.startswith("-"):
             opposite_x_val = x_val[1:]
