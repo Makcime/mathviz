@@ -5,6 +5,39 @@ class SyScene(Scene):
     def construct(self):
 
         # Write the title at the beginning
+        title = Text("Symétrie orthogonale d'axe x", font_size=36)
+        self.play(Write(title))  # Animate the writing of the title
+        self.play(title.animate.to_edge(UP))
+
+        Sy = self.animate_Sx("x", "y")
+
+        # Fade out the title
+        self.play(Sy.animate.to_corner(UR), FadeOut(title))
+
+        self.drawGrid()
+
+        # Add the label "A (2; -4)" at the top left corner
+        A = MathTex("A (2; -4)").to_corner(UL)
+        self.play(Write(A))
+        # self.wait(2)
+
+        # Add a point at the location (2, -4)
+        self.drawPoint(self.axes, cx=2, cy=-4, label="A", color=RED)
+        # self.wait(2)
+
+        SxAA = MathTex("S_{x}(A) = A'").next_to(A, DOWN, aligned_edge=LEFT)
+        self.play(Write(SxAA))
+        # self.wait(2)
+
+        SxA = self.animate_Sx("2", "-4", position=DOWN, relative_to=SxAA)
+        # self.wait(2)
+
+        self.drawPoint(self.axes, cx=2, cy=4, label="A'", color=RED)
+        self.wait(3)
+
+        self.clear()
+
+        # Write the title at the beginning
         title = Text("Symétrie orthogonale d'axe y", font_size=36)
         self.play(Write(title))  # Animate the writing of the title
         self.play(title.animate.to_edge(UP))
@@ -76,6 +109,47 @@ class SyScene(Scene):
         # Add a label next to the point
         lp = MathTex(label).next_to(p, UR)
         self.play(FadeIn(p), Write(lp))
+
+    def animate_Sx(self, x_val, y_val, position=ORIGIN, relative_to=None):
+        # Determine the opposite of x_val
+        if y_val.startswith("-"):
+            opposite_y_val = y_val[1:]
+        else:
+            opposite_y_val = "-" + y_val
+
+        # Create the MathTex object for Sy
+        Sx_part1 = MathTex(f"S_{{x}} ({x_val}; {y_val}) = ")
+        Sx_part2 = MathTex(f"({x_val}; {opposite_y_val})")
+
+        # Position the parts correctly
+        if relative_to:
+            # Sy_part1.next_to(relative_to, position)
+            Sx_part1.next_to(relative_to, position, aligned_edge=LEFT)
+        else:
+            Sx_part1.move_to(position)
+        Sx_part2.next_to(Sx_part1, RIGHT)
+
+        # Display the first part
+        self.play(Write(Sx_part1))
+
+        # Create a copy of the y_val
+        y_copy = Sx_part1[0][
+            5 : len(x_val) + 5
+        ].copy()  # Adjust the index to correctly target the x_val
+
+        # Highlight the original x_val in red
+        self.play(Sx_part1[0][5 : len(y_val) + 5].animate.set_color(RED))
+
+        # Animate the copy of x_val to -x_val and display the final part
+        self.play(
+            Write(Sx_part2),
+            Transform(y_copy, Sx_part2[0][3 : len(opposite_y_val) + 3].set_color(RED)),
+        )  # Transform x_copy to -x_val
+
+        # Group the resulting text
+        final_text = VGroup(Sx_part1, Sx_part2, y_copy)
+
+        return final_text
 
     def animate_Sy(self, x_val, y_val, position=ORIGIN, relative_to=None):
         # Determine the opposite of x_val
