@@ -56,10 +56,10 @@ class Sx(Scene):
         self.play(Write(A))
         # self.wait(2)
 
-        p = Dot(self.axes.coords_to_point(2, -4), color=RED)
-        lp = MathTex("A").next_to(p, UR)
+        p1 = Dot(self.axes.coords_to_point(2, -4), color=RED)
+        lp = MathTex("A").next_to(p1, UR)
         self.play(Circumscribe(A))
-        self.play(Transform(A.copy(), VGroup(p, lp)))
+        self.play(Transform(A.copy(), VGroup(p1, lp)))
 
         SxAA = MathTex("S_{x}(A) = A'").next_to(A, DOWN, aligned_edge=LEFT)
         self.play(Write(SxAA))
@@ -68,15 +68,17 @@ class Sx(Scene):
         SxA = self.animate_Sx("2", "-4", position=DOWN, relative_to=SxAA)
         # self.wait(2)
 
-        p = Dot(self.axes.coords_to_point(2, 4), color=RED)
-        lp = MathTex("A'").next_to(p, UR)
+        p2 = Dot(self.axes.coords_to_point(2, 4), color=RED)
+        lp = MathTex("A'").next_to(p2, UR)
         self.play(Circumscribe(SxA[1]))
-        self.play(Transform(SxA[1].copy(), VGroup(p, lp)))
+        self.play(Transform(SxA[1].copy(), VGroup(p2, lp)))
+
+        self.play(GrowFromEdge(DashedLine(p1, p2), DL))
 
         self.wait(3)
 
     def animate_Sx(self, x_val, y_val, position=ORIGIN, relative_to=None):
-        # Determine the opposite of x_val
+        # Determine the opposite of y_val
         if y_val.startswith("-"):
             opposite_y_val = y_val[1:]
         else:
@@ -141,10 +143,10 @@ class Sy(Scene):
         self.play(Write(A))
         # self.wait(2)
 
-        p = Dot(self.axes.coords_to_point(-2, -4), color=RED)
-        lp = MathTex("A").next_to(p, UR)
+        p1 = Dot(self.axes.coords_to_point(-2, -4), color=RED)
+        lp = MathTex("A").next_to(p1, UR)
         self.play(Circumscribe(A))
-        self.play(Transform(A.copy(), VGroup(p, lp)))
+        self.play(Transform(A.copy(), VGroup(p1, lp)))
 
         SyAA = MathTex("S_{y}(A) = A'").next_to(A, DOWN, aligned_edge=LEFT)
         self.play(Write(SyAA))
@@ -153,10 +155,12 @@ class Sy(Scene):
         SyA = self.animate_Sy("-2", "-4", position=DOWN, relative_to=SyAA)
         # self.wait(2)
 
-        p = Dot(self.axes.coords_to_point(2, -4), color=RED)
-        lp = MathTex("A'").next_to(p, UR)
+        p2 = Dot(self.axes.coords_to_point(2, -4), color=RED)
+        lp = MathTex("A'").next_to(p2, UR)
         self.play(Circumscribe(SyA[1]))
-        self.play(Transform(SyA[1].copy(), VGroup(p, lp)))
+        self.play(Transform(SyA[1].copy(), VGroup(p2, lp)))
+
+        self.play(GrowFromEdge(DashedLine(p1, p2), DL))
 
         self.wait(3)
 
@@ -203,5 +207,112 @@ class Sy(Scene):
 
         # Group the resulting text
         final_text = VGroup(Sy_part1, Sy_part2, x_copy)
+
+        return final_text
+
+
+class So(Scene):
+    def construct(self):
+        # Write the title at the beginning
+        title = Text("Symétrie centrale de centre O(0, 0)", font_size=36)
+        self.play(Write(title))  # Animate the writing of the title
+        self.play(title.animate.to_edge(UP))
+
+        So = self.animate_So("x", "y")
+
+        # Fade out the title
+        self.play(So.animate.to_corner(UR), FadeOut(title))
+
+        drawGrid(self)
+
+        # Add the label "A (2; -4)" at the top left corner
+        A = MathTex("A (-2; -4)").to_corner(UL)
+        self.play(Write(A))
+        # self.wait(2)
+
+        p1 = Dot(self.axes.coords_to_point(-2, -4), color=RED)
+        lp = MathTex("A").next_to(p1, UL)
+        self.play(Circumscribe(A))
+        self.play(Transform(A.copy(), VGroup(p1, lp)))
+
+        SoAA = MathTex("S_{O}(A) = A'").next_to(A, DOWN, aligned_edge=LEFT)
+        self.play(Write(SoAA))
+        # self.wait(2)
+
+        SoA = self.animate_So("-2", "-4", position=DOWN, relative_to=SoAA)
+        # self.wait(2)
+
+        p2 = Dot(self.axes.coords_to_point(2, 4), color=RED)
+        lp = MathTex("A'").next_to(p2, UL)
+
+        self.play(Circumscribe(SoA[1]))
+        self.play(Transform(SoA[1].copy(), VGroup(p2, lp)))
+
+        self.play(GrowFromEdge(DashedLine(p1, p2), DL))
+
+        self.wait(3)
+
+    def animate_So(self, x_val, y_val, position=ORIGIN, relative_to=None):
+        # Determine the opposite of x_val
+        if x_val.startswith("-"):
+            opposite_x_val = x_val[1:]
+        else:
+            opposite_x_val = "-" + x_val
+
+        # Determine the opposite of y_val
+        if y_val.startswith("-"):
+            opposite_y_val = y_val[1:]
+        else:
+            opposite_y_val = "-" + y_val
+
+        # Create the MathTex object for Sy
+        So_part1 = MathTex(f"S_{{O}} ({x_val}; {y_val}) = ")
+        So_part2 = MathTex(f"({opposite_x_val}; {opposite_y_val})")
+
+        # Position the parts correctly
+        if relative_to:
+            # Sy_part1.next_to(relative_to, position)
+            So_part1.next_to(relative_to, position, aligned_edge=LEFT)
+        else:
+            So_part1.move_to(position)
+        So_part2.next_to(So_part1, RIGHT)
+
+        # Display the first part
+        self.play(Write(So_part1))
+
+        x = So_part1[0][3 : len(x_val) + 3]
+        x.set_color(RED)
+        mx = So_part2[0][1 : len(opposite_x_val) + 1]
+
+        y = So_part1[0][len(x_val) + 4 : len(y_val) + len(x_val) + 4]
+        y.set_color(YELLOW)
+        my = So_part2[0][
+            len(opposite_x_val) + 2 : len(opposite_y_val) + len(opposite_x_val) + 2
+        ]
+
+        # Create a copy of the x_val
+        x_copy = x.copy()  # Adjust the index to correctly target the x_val
+        y_copy = y.copy()  # Adjust the index to correctly target the x_val
+
+        # Highlight the original x_val in red
+        self.play(Indicate(x, color=RED, scale_factor=2))
+        self.play(Indicate(y, color=YELLOW, scale_factor=2))
+
+        # Animate the copy of x_val to -x_val and display the final part
+        self.play(
+            Write(So_part2),
+            Transform(x_copy, mx.set_color(RED)),
+            Transform(y_copy, my.set_color(YELLOW)),
+        )  # Transform x_copy to -x_val
+
+        self.play(Indicate(x, color=RED, scale_factor=2))
+        self.play(Indicate(mx, color=RED, scale_factor=2))
+
+        self.play(Indicate(y, color=YELLOW, scale_factor=2))
+        self.play(
+            Indicate(my, color=YELLOW, scale_factor=2)
+        )  # Group the resulting text
+
+        final_text = VGroup(So_part1, So_part2, x_copy, y_copy)
 
         return final_text
