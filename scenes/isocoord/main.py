@@ -33,28 +33,39 @@ def drawGrid(self):
     y_ = self.axes.get_y_axis_label("y", edge=UP, direction=UP, buff=0.5)
 
     self.xyPlane = VGroup(self.grid, self.axes, x_, y_)
+    self.xyPlane.scale(0.9)
+    self.xyPlane.to_corner(DR, buff=0.8)
+
     self.play(FadeIn(self.xyPlane))
 
 
 class Sx(Scene):
     def construct(self):
 
-        # Write the title at the beginning
         title = Text("Symétrie orthogonale d'axe x", font_size=36)
         self.play(Write(title))  # Animate the writing of the title
         self.play(title.animate.to_edge(UP))
 
-        Sy = self.animate_Sx("x", "y")
+        Sx = self.animate_Sx("x", "y")
 
         # Fade out the title
-        self.play(Sy.animate.to_corner(UR), FadeOut(title))
+        # self.play(Sx.animate.to_corner(UL), FadeOut(title))
+
+        # 1) Create "targets" for each
+        title.generate_target()
+        Sx.generate_target()
+
+        # 2) Move them in the "target" space
+        title.target.to_corner(UL, buff=0.8)
+        Sx.target.next_to(title.target, DOWN, aligned_edge=LEFT)
+
+        # 3) Animate them both at once
+        self.play(MoveToTarget(title), MoveToTarget(Sx))
 
         drawGrid(self)
 
-        # Add the label "A (2; -4)" at the top left corner
-        A = MathTex("A (2; -4)").to_corner(UL)
+        A = MathTex("A (2; -4)").next_to(Sx, DOWN, aligned_edge=LEFT)
         self.play(Write(A))
-        # self.wait(2)
 
         p1 = Dot(self.axes.coords_to_point(2, -4), color=RED)
         lp = MathTex("A").next_to(p1, UR)
@@ -63,10 +74,8 @@ class Sx(Scene):
 
         SxAA = MathTex("S_{x}(A) = A'").next_to(A, DOWN, aligned_edge=LEFT)
         self.play(Write(SxAA))
-        # self.wait(2)
 
         SxA = self.animate_Sx("2", "-4", position=DOWN, relative_to=SxAA)
-        # self.wait(2)
 
         p2 = Dot(self.axes.coords_to_point(2, 4), color=RED)
         lp = MathTex("A'").next_to(p2, UR)
@@ -84,13 +93,13 @@ class Sx(Scene):
         else:
             opposite_y_val = "-" + y_val
 
-        # Create the MathTex object for Sy
+        # Create the MathTex object for Sx
         Sx_part1 = MathTex(f"S_{{x}} ({x_val}; {y_val}) = ")
         Sx_part2 = MathTex(f"({x_val}; {opposite_y_val})")
 
         # Position the parts correctly
         if relative_to:
-            # Sy_part1.next_to(relative_to, position)
+            # Sx_part1.next_to(relative_to, position)
             Sx_part1.next_to(relative_to, position, aligned_edge=LEFT)
         else:
             Sx_part1.move_to(position)
@@ -343,7 +352,9 @@ class Rop(Scene):
         self.play(Circumscribe(A))
         self.play(Transform(A.copy(), VGroup(p1, lp)))
 
-        RopAA = MathTex("R_{O; +90^{circ}}(A) = A'").next_to(A, DOWN, aligned_edge=LEFT)
+        RopAA = MathTex("R_{O; +90^{\circ}}(A) = A'").next_to(
+            A, DOWN, aligned_edge=LEFT
+        )
         self.play(Write(RopAA))
         # self.wait(2)
 
@@ -375,7 +386,7 @@ class Rop(Scene):
             opposite_y_val = "-" + y_val
 
         # Create the MathTex object for Sy
-        Rop_part1 = MathTex(f"r_{{O; +90°}} ({x_val}; {y_val}) = ")
+        Rop_part1 = MathTex(f"r_{{O; +90^{{\circ}}}} ({x_val}; {y_val}) = ")
         Rop_part2 = MathTex(f"({opposite_y_val}; {x_val})")
 
         # Position the parts correctly
@@ -386,12 +397,12 @@ class Rop(Scene):
             Rop_part1.move_to(position)
         Rop_part2.next_to(Rop_part1, RIGHT)
 
-        x = Rop_part1[0][7 : len(x_val) + 7]
+        x = Rop_part1[0][8 : len(x_val) + 8]
         x.set_color(RED)
         mx = Rop_part2[0][1 : len(opposite_x_val) + 1]
         mx.set_color(BLACK)
 
-        y = Rop_part1[0][len(x_val) + 8 : len(y_val) + len(x_val) + 8]
+        y = Rop_part1[0][len(x_val) + 9 : len(y_val) + len(x_val) + 9]
         y.set_color(YELLOW)
         my = Rop_part2[0][
             len(opposite_y_val) + 2 : len(x_val) + len(opposite_y_val) + 2
