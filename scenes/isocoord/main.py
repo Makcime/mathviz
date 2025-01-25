@@ -296,8 +296,8 @@ class So(Scene):
         y = So_part1[0][len(x_val) + 4 : len(y_val) + len(x_val) + 4]
         y.set_color(YELLOW)
         my = So_part2[0][
-            len(opposite_x_val) + 2 : len(opposite_y_val) + len(opposite_x_val) + 2
-        ]
+        len(opposite_x_val) + 2 : len(opposite_y_val) + len(opposite_x_val) + 2
+    ]
 
         # Create a copy of the x_val
         x_copy = x.copy()  # Adjust the index to correctly target the x_val
@@ -405,8 +405,8 @@ class Rop(Scene):
         y = Rop_part1[0][len(x_val) + 9 : len(y_val) + len(x_val) + 9]
         y.set_color(YELLOW)
         my = Rop_part2[0][
-            len(opposite_y_val) + 2 : len(x_val) + len(opposite_y_val) + 2
-        ]
+        len(opposite_y_val) + 2 : len(x_val) + len(opposite_y_val) + 2
+    ]
         my.set_color(BLACK)
 
         # Create a copy of the x_val
