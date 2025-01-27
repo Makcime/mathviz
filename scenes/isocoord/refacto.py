@@ -406,3 +406,89 @@ class Ron(RoScene):
 
     def get_example_point(self):
         return (2, -4), "A"
+
+
+class TOP(BaseTransformationScene):
+    def get_title_text(self):
+        return r"Translation de vecteur $\overrightarrow{OP}$"
+
+    def get_prefix(self):
+        return "t_{\overrightarrow{OP}}"
+
+    def transform_func(self, x, y):
+        ox, oy = self.get_opposites(x, y)
+        return (ox, oy)
+
+    def get_example_point(self):
+        return (2, -4), "A"
+
+    def construct(self):
+        # 1) Show title
+        title_text = self.get_title_text()
+        title = Tex(title_text, font_size=56)
+        self.play(Write(title))
+        self.play(title.animate.to_edge(UP))
+
+        # 2) Animate the transformation text for symbolic x,y
+        prefix = self.get_prefix()
+        transform_equation = self.animate_transformation(prefix, "x", "y")
+
+        # Move them together (title + transform) up-left in one animation
+        title.generate_target()
+        transform_equation.generate_target()
+
+        title.target.to_corner(UL, buff=0.8)
+        transform_equation.target.next_to(title.target, DOWN, aligned_edge=LEFT)
+
+        self.play(MoveToTarget(title), MoveToTarget(transform_equation))
+
+        # 3) Draw grid
+        self.setup_axes_and_grid()
+
+        # 4) Show example point A at (x0, y0)
+        (x0, y0), label_str = self.get_example_point()
+        A_label_tex = MathTex(f"{label_str} ({x0}; {y0})")
+        A_label_tex.next_to(transform_equation, DOWN, aligned_edge=LEFT)
+        self.play(Write(A_label_tex))
+
+        # Place a dot + label on the axes
+        pA = Dot(self.axes.coords_to_point(x0, y0), color=RED)
+        pA_label = MathTex(label_str).next_to(pA, UR)
+
+        # Animate from text "A(...)" -> actual dot
+        self.play(Circumscribe(A_label_tex))
+        self.play(Transform(A_label_tex.copy(), VGroup(pA, pA_label)))
+
+        # 5) The text "prefix(A) = A'"
+        transform_of_A_tex = MathTex(f"{prefix}({label_str}) = {label_str}'")
+        transform_of_A_tex.next_to(A_label_tex, DOWN, aligned_edge=LEFT)
+        self.play(Write(transform_of_A_tex))
+
+        transform_equation = self.animate_transformation(
+            prefix, x0, y0, position=DOWN, relative_to=transform_of_A_tex
+        )
+
+        # 6) Actually transform (x0, y0) => new coords
+        new_x, new_y = self.transform_func(x0, y0)
+        try:
+            new_x = float(new_x)
+            new_y = float(new_y)
+        except ValueError:
+            # If you can't convert to float, handle gracefully:
+            # e.g. skip placing the dot, or show a warning
+            pass
+        pA_prime = Dot(self.axes.coords_to_point(new_x, new_y), color=RED)
+        A_prime_label = MathTex(f"{label_str}'").next_to(pA_prime, UR)
+
+        # Animate transformations / lines
+        self.play(
+            Circumscribe(transform_equation[2])
+        )  # highlight second part (just an example)
+        self.play(
+            Transform(transform_equation[2].copy(), VGroup(pA_prime, A_prime_label))
+        )
+
+        # Draw a dashed line from A to A'
+        self.animate_lines(pA, pA_prime)
+
+        self.wait(2)
