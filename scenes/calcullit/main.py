@@ -223,7 +223,7 @@ class SimpleDistrib1(Scene):
         # First transformation: eq1 --> eq2.
         eq1_tokens = [
             "{{-4a}}",  # 0
-            "\cdot (",  # 1
+            "\\cdot (",  # 1
             "{{a}}",  # 2
             "{{-2}}",  # 3
             ")",  # 4
@@ -232,11 +232,11 @@ class SimpleDistrib1(Scene):
         eq2_tokens = [
             "=",
             "{{(-4a)}}",  # 1
-            "\cdot",  # 2
+            "\\cdot",  # 2
             "{{a}}",  # 3
             "{{+}}",  # 4
             "{{(-4a)}}",  # 5
-            "\cdot",  # 6
+            "\\cdot",  # 6
             "{{(-2)}}",  # 7
         ]
         eq2_groupings = {YELLOW: [1, 5], BLUE: [3], PURPLE: [7]}
@@ -280,7 +280,7 @@ class DoubleDistrib1(Scene):
             "(",
             "2",
             "-a",
-            ")\cdot(",
+            ")\\cdot(",
             "3b",
             "+5",
             ")",
@@ -289,19 +289,19 @@ class DoubleDistrib1(Scene):
         eq2_tokens = [
             "=",
             "2",
-            "\cdot",
+            "\\cdot",
             "3b",
             "+",
             "2",
-            "\cdot",
+            "\\cdot",
             "5",
             "+",
             "(-a)",
-            "\cdot",
+            "\\cdot",
             "3b",
             "+",
             "(-a)",
-            "\cdot",
+            "\\cdot",
             "5",
         ]
         eq2_groupings = {YELLOW: [1, 5], BLUE: [9, 13], PURPLE: [3, 11], GREEN: [7, 15]}
@@ -419,3 +419,126 @@ class Add1(Scene):
             starting_eq=eq2_obj,
         )
         self.wait(3)
+
+
+class MinusParenthesis1(Scene):
+    def construct(self):
+        # 2x – (6x – 7)
+        eq1_tokens = [
+            "2x",
+            "-(",
+            "6x",
+            "-7",
+            ")",
+        ]
+        eq1_groupings = {YELLOW: [1, 4], BLUE: [2], PURPLE: [3]}
+        eq2_tokens = [
+            "=",
+            "2x",
+            "-6x",
+            "+7",
+        ]
+        eq2_groupings = {BLUE: [2], PURPLE: [3]}
+        eq1_obj, eq2_obj = animate_eq_transformation(
+            self,
+            eq1_tokens,
+            eq1_groupings,
+            eq2_tokens,
+            eq2_groupings,
+            buff=0.5,
+            wait_time=1,
+        )
+
+        eq3_tokens = [
+            "=",
+            "-4x",  # 1
+            "+7",  # 2
+        ]
+
+        eq2_groupings = {BLUE: [1, 2], PURPLE: [3]}
+        eq3_groupings = {BLUE: [1], PURPLE: [2]}
+        eq2_obj, eq3_obj = animate_eq_transformation(
+            self,
+            eq2_tokens,
+            eq2_groupings,
+            eq3_tokens,
+            eq3_groupings,
+            buff=0.5,
+            wait_time=1,
+            starting_eq=eq2_obj,
+        )
+
+        self.wait(3)
+
+
+class MinusParenthesis2(Scene):
+    def construct(self):
+        # 6u – (–7w – 12u )
+        eq1_tokens = [
+            "6u",
+            "-(",
+            "-7w",
+            "-12u",
+            ")",
+        ]
+        eq1_groupings = {YELLOW: [1, 4], BLUE: [2], PURPLE: [3]}
+        eq2_tokens = [
+            "=",
+            "6u",
+            "+7w",
+            "+12u",
+        ]
+        eq2_groupings = {BLUE: [2], PURPLE: [3]}
+        eq1_obj, eq2_obj = animate_eq_transformation(
+            self,
+            eq1_tokens,
+            eq1_groupings,
+            eq2_tokens,
+            eq2_groupings,
+            buff=0.5,
+            wait_time=1,
+        )
+
+        eq3_tokens = [
+            "=",
+            "18u",  # 1
+            "+7w",  # 2
+        ]
+
+        eq2_groupings = {BLUE: [2], PURPLE: [1, 3]}
+        eq3_groupings = {BLUE: [2], PURPLE: [1]}
+        eq2_obj, eq3_obj = animate_eq_transformation(
+            self,
+            eq2_tokens,
+            eq2_groupings,
+            eq3_tokens,
+            eq3_groupings,
+            buff=0.5,
+            wait_time=1,
+            starting_eq=eq2_obj,
+        )
+
+        self.wait(3)
+
+
+def fade_out(scene: Scene):
+    animations = []
+    for mobject in scene.mobjects:
+        animations.append(FadeOut(mobject))
+    scene.play(*animations)
+
+
+class CombinedScene(Scene):
+    def construct(self):
+        scenes = [
+            Add1,
+            Mul1,
+            Mul2,
+            MinusParenthesis1,
+            MinusParenthesis2,
+            SimpleDistrib1,
+            DoubleDistrib1,
+        ]
+        for scene in scenes:
+            scene.construct(self)
+            fade_out(self)
